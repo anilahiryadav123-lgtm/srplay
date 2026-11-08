@@ -19,20 +19,11 @@ jobs:
         run: |
           mkdir -p app/www && cd app
           cp ../index.html ../game.js ../config.js ../logo.png www/
-          cp ../logo.png logo.png
           echo '{"name":"srplay-apk","version":"1.0.0","private":true,"dependencies":{"@capacitor/android":"^6.2.0","@capacitor/cli":"^6.2.0","@capacitor/core":"^6.2.0"}}' > package.json
           echo '{"appId":"com.srplay.game","appName":"SR Play","webDir":"www","server":{"androidScheme":"https"}}' > capacitor.config.json
           npm install
           npx cap add android
           sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
-          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
-            IFS=: read n s f <<< "$d"
-            out=android/app/src/main/res/mipmap-$n
-            convert logo.png -resize ${s}x${s} $out/ic_launcher.png
-            convert logo.png -resize ${s}x${s} $out/ic_launcher_round.png
-            convert logo.png -resize $((f*60/100))x$((f*60/100)) -background none -gravity center -extent ${f}x${f} $out/ic_launcher_foreground.png
-          done
-          sed -i 's/#FFFFFF/#4A22D8/' android/app/src/main/res/values/ic_launcher_background.xml
           npx cap sync android
       - name: Build APK
         working-directory: app/android
