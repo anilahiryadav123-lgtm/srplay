@@ -19,26 +19,11 @@ jobs:
         run: |
           mkdir -p app/www && cd app
           cp ../index.html ../game.js ../config.js ../logo.png www/
-          cp ../logo.png logo.png
           echo '{"name":"srplay-apk","version":"1.0.0","private":true,"dependencies":{"@capacitor/android":"^6.2.0","@capacitor/cli":"^6.2.0","@capacitor/core":"^6.2.0"}}' > package.json
           echo '{"appId":"com.srplay.game","appName":"SR Play","webDir":"www","server":{"androidScheme":"https"}}' > capacitor.config.json
           npm install
           npx cap add android
           sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
-          python3 -m pip install pillow --break-system-packages || python3 -m pip install pillow
-          python3 - <<'PY'
-          from PIL import Image
-          im = Image.open('logo.png').convert('RGBA')
-          for n, s, f in [('mdpi',48,108),('hdpi',72,162),('xhdpi',96,216),('xxhdpi',144,324),('xxxhdpi',192,432)]:
-              d = 'android/app/src/main/res/mipmap-' + n + '/'
-              im.resize((s, s)).save(d + 'ic_launcher.png')
-              im.resize((s, s)).save(d + 'ic_launcher_round.png')
-              fg = Image.new('RGBA', (f, f), (0, 0, 0, 0))
-              k = int(f * 0.6)
-              fg.paste(im.resize((k, k)), ((f - k) // 2, (f - k) // 2))
-              fg.save(d + 'ic_launcher_foreground.png')
-          PY
-          sed -i 's/#FFFFFF/#4A22D8/' android/app/src/main/res/values/ic_launcher_background.xml
           npx cap sync android
       - name: Build APK
         working-directory: app/android
