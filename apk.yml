@@ -25,13 +25,19 @@ jobs:
           npm install
           npx cap add android
           sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
-          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
-            IFS=: read n s f <<< "$d"
-            out=android/app/src/main/res/mipmap-$n
-            convert logo.png -resize ${s}x${s} $out/ic_launcher.png
-            convert logo.png -resize ${s}x${s} $out/ic_launcher_round.png
-            convert logo.png -resize $((f*60/100))x$((f*60/100)) -background none -gravity center -extent ${f}x${f} $out/ic_launcher_foreground.png
-          done
+          python3 -m pip install pillow --break-system-packages || python3 -m pip install pillow
+          python3 - <<'PY'
+          from PIL import Image
+          im = Image.open('logo.png').convert('RGBA')
+          for n, s, f in [('mdpi',48,108),('hdpi',72,162),('xhdpi',96,216),('xxhdpi',144,324),('xxxhdpi',192,432)]:
+              d = 'android/app/src/main/res/mipmap-' + n + '/'
+              im.resize((s, s)).save(d + 'ic_launcher.png')
+              im.resize((s, s)).save(d + 'ic_launcher_round.png')
+              fg = Image.new('RGBA', (f, f), (0, 0, 0, 0))
+              k = int(f * 0.6)
+              fg.paste(im.resize((k, k)), ((f - k) // 2, (f - k) // 2))
+              fg.save(d + 'ic_launcher_foreground.png')
+          PY
           sed -i 's/#FFFFFF/#4A22D8/' android/app/src/main/res/values/ic_launcher_background.xml
           npx cap sync android
       - name: Build APK
