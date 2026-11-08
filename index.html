@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>SR Play - Paint to Hide</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#0a0820;font-family:system-ui,Roboto,sans-serif;color:#fff}
+canvas{position:fixed;inset:0;display:block}
+#hud>*{position:fixed}
+button{font:inherit;color:inherit;border:0}
+.ic{top:10px;right:64px;width:46px;height:46px;border-radius:50%;background:#0008;font-size:22px;border:2px solid #fff6}
+#gear{right:10px}
+#pub{top:10px;left:10px;background:#000a;border:2px solid #fff4;border-radius:16px;padding:4px 18px;font-size:15px}
+#slots{top:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:#000a;padding:6px 10px;border-radius:18px}
+.sl{width:38px;text-align:center;font-size:9px;white-space:nowrap;overflow:hidden}
+.sl i{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;font-style:normal;font-weight:700;font-size:17px;margin-bottom:1px;background:#fff3}
+#pill{top:76px;left:50%;transform:translateX(-50%);background:#eee;color:#111;font-weight:700;padding:3px 40px;border-radius:14px;display:none}
+#sb{top:10px;left:10px;font-size:14px;text-shadow:0 1px 3px #000;display:none;min-width:190px}
+#sb b{font-size:15px}.sr{display:flex;justify-content:space-between;gap:10px;margin-top:3px}.sr.me{color:#ff5a5a}
+#tm{top:6px;left:50%;transform:translateX(-50%);text-align:center;display:none}
+#tv{font-size:38px;font-weight:800;letter-spacing:1px;text-shadow:0 2px 6px #000}
+#tl{display:block;font-size:14px;margin-top:-4px}
+#joyZone{left:0;bottom:0;width:42%;height:62%}
+#knob{position:absolute;width:64px;height:64px;border-radius:50%;background:#fff5;border:2px solid #fff6;display:none}
+.rb{width:72px;height:72px;border-radius:50%;background:#ffffff30;border:2px solid #fff5;font-size:34px}
+#jump{right:22px;bottom:26px;width:86px;height:86px}#emo{right:30px;bottom:132px;width:56px;height:56px;font-size:26px}
+#fire{right:130px;bottom:50px;display:none;background:#1e7a3a99}
+#mst{bottom:22px;left:50%;transform:translateX(-50%);display:flex;border-radius:26px;overflow:hidden;box-shadow:0 4px 0 #0006}
+#mst button{padding:14px 34px;font-size:22px;font-weight:700}
+#match{background:#1b1b1b;color:#fff}#start{background:#e4e4e4;color:#111}
+#cross{left:50%;top:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:200;display:none;pointer-events:none;text-shadow:0 0 3px #000}
+#toast{top:92px;left:0;right:0;text-align:center;font-size:20px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;text-shadow:0 2px 5px #000}
+#brush{left:50%;bottom:4px;transform:translateX(-50%);width:80px;height:50px;background:#ddd;color:#333;border-radius:20px 20px 0 0;font-size:28px;display:none}
+#paint{bottom:14px;left:50%;transform:translateX(-50%);background:#e8e8e8;border-radius:26px;padding:8px 12px;display:none;align-items:center;gap:8px;color:#222}
+#paint button{width:44px;height:44px;border-radius:50%;background:#fff;font-size:20px;color:#333}
+#paint button.on{outline:3px solid #ffd23f}
+#paint input{width:46px;height:46px;border:0;padding:0;border-radius:50%;background:none}
+#set,#ov{inset:0;display:none;place-items:center;background:#0008;z-index:5}#ov{pointer-events:none;background:#0005}
+.box{background:#241a14;border-radius:24px;padding:18px;width:min(560px,92%);border:2px solid #4a3a2c}
+.box h2{margin:0 0 12px;text-align:center;font-size:28px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#3a2e26;border-radius:12px;padding:10px 14px;margin:8px 0}
+.row input[type=range]{flex:1}
+.bt{display:flex;gap:10px;margin-top:12px}.bt button{flex:1;padding:12px;border-radius:12px;background:#3a2e26;font-weight:700}
+.bt .red{background:#8b2a2a}
+#ov .box{text-align:center}#ov .big{font-size:28px;font-weight:800;margin-bottom:8px}
+#ov .go{background:#2f9e2f;border-radius:12px;padding:12px 40px;font-size:22px;font-weight:700;margin-top:10px}
+#intro{position:fixed;inset:0;z-index:9;background:linear-gradient(#5b2be0,#2a0f8a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#intro img{width:150px;border-radius:30px}#intro input{padding:12px 16px;font-size:20px;border-radius:14px;border:0;text-align:center;width:240px;user-select:text}
+#go{background:#ffd23f;color:#3a2200;padding:12px 50px;border-radius:16px;font-size:22px;font-weight:800;box-shadow:0 4px 0 #b88a00}
+#st{font-size:14px;min-height:18px}
+</style></head><body>
+<div id="intro"><img src="logo.png" alt="SR Play"><div style="font-size:26px;font-weight:800">Paint to Hide</div>
+<input id="nm" maxlength="14" placeholder="Apna naam" autocomplete="off"><button id="go">Khelo</button><div id="st"></div></div>
+<div id="hud">
+ <div id="pub">Public</div><div id="slots"></div><div id="pill">Matching...</div>
+ <div id="sb"></div><div id="tm"><b id="tv"></b><span id="tl"></span></div>
+ <button class="ic" id="fit">👕</button><button class="ic" id="gear">⚙️</button>
+ <div id="joyZone"><div id="knob"></div></div>
+ <button class="rb" id="emo">😜</button><button class="rb" id="jump">🤸</button><button class="rb" id="fire">🔫</button>
+ <div id="mst"><button id="match">Match</button><button id="start">Start</button></div>
+ <div id="cross">+</div><div id="toast"></div><button id="brush">🖌️</button>
+ <div id="paint"><button id="undo">↶</button><button class="sz" data-s="3">·</button><button class="sz" data-s="7">•</button><button class="sz on" data-s="12">●</button><button class="sz" data-s="20">⬤</button><input type="color" id="col" value="#e53935"><button id="eye">💧</button><button id="rot">↻</button><button id="pclose">✕</button></div>
+ <div id="set"><div class="box"><h2>Setting</h2>
+  <div class="row">📳 Vibration<input type="checkbox" id="s_vib"></div>
+  <div class="row">🙂 Show Nickname<input type="checkbox" id="s_nick"></div>
+  <div class="row">Camera speed<input type="range" id="s_cam" min="0" max="1" step=".05"></div>
+  <div class="row">🔊 Volume<input type="range" id="s_vol" min="0" max="1" step=".05"></div>
+  <div class="row">🎵 BGM<input type="range" id="s_bgm" min="0" max="1" step=".05"></div>
+  <div class="bt"><button id="guide">📖 Gameplay Guide</button><button id="unstuck">Unstuck</button><button class="red" id="exit">Exit Game</button></div>
+  <div class="bt"><button id="sclose">Band karo</button></div></div></div>
+ <div id="ov"><div class="box"><div class="big" id="ovt"></div><div id="ovp"></div><button class="go" id="ovb">Hide!</button></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="config.js"></script><script src="game.js"></script>
+</body></html>
