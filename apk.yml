@@ -1,27 +1,30 @@
 name: Build APK
 on:
   workflow_dispatch:
-  push:
-    paths: ['apk/**', '.github/workflows/apk.yml']
 permissions:
   contents: write
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with:
+          node-version: 20
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: 17 }
-      - name: Android project banao
-        working-directory: apk
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Android project
         run: |
+          mkdir -p app/www && cd app
+          cp ../index.html ../game.js ../config.js ../logo.png www/
+          cp ../logo.png logo.png
+          echo '{"name":"srplay-apk","version":"1.0.0","private":true,"dependencies":{"@capacitor/android":"^6.2.0","@capacitor/cli":"^6.2.0","@capacitor/core":"^6.2.0"}}' > package.json
+          echo '{"appId":"com.srplay.game","appName":"SR Play","webDir":"www","server":{"androidScheme":"https"}}' > capacitor.config.json
           npm install
           npx cap add android
-          # landscape mode
           sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
-          # app icon = SR Play logo
           for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
             IFS=: read n s f <<< "$d"
             out=android/app/src/main/res/mipmap-$n
@@ -31,14 +34,14 @@ jobs:
           done
           sed -i 's/#FFFFFF/#4A22D8/' android/app/src/main/res/values/ic_launcher_background.xml
           npx cap sync android
-      - name: APK build
-        working-directory: apk/android
+      - name: Build APK
+        working-directory: app/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-      - name: Release me daalo (download link)
+      - name: Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cp apk/android/app/build/outputs/apk/debug/app-debug.apk SRPlay.apk
-          gh release create "apk-${{ github.run_number }}" SRPlay.apk --title "SR Play APK ${{ github.run_number }}" --notes "Download SRPlay.apk aur install karo"
+          cp app/android/app/build/outputs/apk/debug/app-debug.apk SRPlay.apk
+          gh release create "apk-${{ github.run_number }}" SRPlay.apk --title "SR Play APK ${{ github.run_number }}" --notes "SRPlay.apk download karke install karo"
