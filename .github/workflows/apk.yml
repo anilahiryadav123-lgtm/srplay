@@ -1,6 +1,8 @@
 name: Build APK
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
 permissions:
   contents: write
 jobs:
@@ -18,21 +20,6 @@ jobs:
       - name: Android project
         run: |
           mkdir -p app/www && cd app
-          cp ../index.html ../game.js ../config.js ../logo.png www/
-          echo '{"name":"srplay-apk","version":"1.0.0","private":true,"dependencies":{"@capacitor/android":"^6.2.0","@capacitor/cli":"^6.2.0","@capacitor/core":"^6.2.0"}}' > package.json
-          echo '{"appId":"com.srplay.game","appName":"SR Play","webDir":"www","server":{"androidScheme":"https"}}' > capacitor.config.json
-          npm install
-          npx cap add android
-          sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
-          npx cap sync android
-      - name: Build APK
-        working-directory: app/android
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-      - name: Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cp app/android/app/build/outputs/apk/debug/app-debug.apk SRPlay.apk
-          gh release create "apk-${{ github.run_number }}" SRPlay.apk --title "SR Play APK ${{ github.run_number }}" --notes "SRPlay.apk download karke install karo"
+          cp ../index.html www/
+          echo '{"name":"srplay-apk","version":"1.0.0","private":true,"dependencies":{"@capacitor/android":"^6.2.0","@capacitor/core":"^6.2.0","@capacitor/cli":"^6.2.0"}}' > package.json
+          echo '{"appId":"com.srplay.game","appName":"SR Play","webDir":"www","server":{"androidScheme":"https"}}' > capacitor.con
